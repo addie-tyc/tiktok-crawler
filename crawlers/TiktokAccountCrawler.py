@@ -4,24 +4,15 @@ import os
 from bs4 import BeautifulSoup as bs
 from dotenv import load_dotenv
 import pymysql.cursors
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 
 from crawlers.BaseTiktokCrawler import BaseTiktokCrawler
 from util import convert_str_to_number
 
 load_dotenv()
 
-options = Options()
-options.add_argument('--no-sandbox') # for error: DevToolsActivePort file doesn't exist
-options.add_argument('--headless')  
-options.add_argument('--disable-gpu')
-
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account: str, driver=webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)):
+    def __init__(self, account: str, driver):
         super().__init__(driver=driver)
         assert account[0] == '@', 'The account\'s format is invalid.'
         self.account = account
@@ -31,7 +22,6 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
     def crawl(self, url=None) -> dict:
         self.driver.get(self.url)
         html = bs(self.driver.page_source, 'html.parser')
-        self.driver.close()
         targets = [
                 ('h2', {'data-e2e': 'user-title'}),
                 ('h1', {'data-e2e': 'user-subtitle'}),

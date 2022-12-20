@@ -5,24 +5,15 @@ from typing import List
 from bs4 import BeautifulSoup as bs
 from dotenv import load_dotenv
 import pymysql.cursors
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 
 from crawlers.BaseTiktokCrawler import BaseTiktokCrawler
 from util import convert_str_to_number
 
 load_dotenv()
 
-options = Options() 
-options.add_argument('--no-sandbox') # for error: DevToolsActivePort file doesn't exist
-options.add_argument('--headless')  
-options.add_argument('--disable-gpu')
-
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, links, driver=webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)):
+    def __init__(self, links, driver):
         super().__init__(driver=driver)
         assert links, 'There is no any link. Something went wrong.'
         self.links = links
@@ -42,7 +33,6 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             res['link'] = link
             res['post_id'] = int(link.split('/')[-1])
             results.append(res)
-        self.driver.close()
         return results
     
     def crawl(self, url=None):
