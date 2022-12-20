@@ -28,6 +28,7 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         assert account[0] == '@', 'The account\'s format is invalid.'
         self.account = account
         self.url = f'https://www.tiktok.com/{self.account}'
+        self.links = []
     
     def crawl(self, url=None) -> dict:
         self.driver.get(self.url)
@@ -45,6 +46,7 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         ]
         res = self.parse_targets(html, targets, {})
         self.parse_targets(html, counts, res, convert_str_to_number)
+        self.links = self.get_latest_posts(html)
         return res
 
     def parse_targets(self, html: bs, targets: List[Tuple[str, dict]], res: dict, transform_fn: FunctionType=None) -> dict:
@@ -70,8 +72,12 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
             sql = 'INSERT INTO `accounts_info` (%s) VALUES (%s)' % (columns, placeholders)
             cursor.execute(sql, list(data.values()))
         conn.commit()
-    
+
+    def get_latest_posts(self, html, limit=5):
+        posts = html.findAll('div', {'data-e2e': 'user-post-item'}, limit=limit)
+        return [post.find('a')['href'] for post in posts]
+
     def run(self):
         res = self.crawl()
-        print(res)
         self.save_to_db(res)
+        return self.links
