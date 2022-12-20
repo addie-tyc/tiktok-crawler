@@ -24,7 +24,7 @@ class BaseTiktokCrawler(metaclass=abc.ABCMeta):
     def parse_targets(self, html: bs, targets: List[Tuple[str, dict]], res: dict, transform_fn: FunctionType=None) -> dict:
         for tag, cond in targets:
             key = list(cond.values())[0].replace('-', '_')
-            res[key] = html.find(tag, cond).text
+            res[key] = html.find(tag, cond).text.strip()
             if transform_fn:
                 res[key] = transform_fn(res[key])
         return res

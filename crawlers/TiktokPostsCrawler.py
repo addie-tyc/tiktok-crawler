@@ -5,23 +5,16 @@ from typing import List
 from bs4 import BeautifulSoup as bs
 from dotenv import load_dotenv
 import pymysql.cursors
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 
 from crawlers.BaseTiktokCrawler import BaseTiktokCrawler
+from logger import logger
 from util import convert_str_to_number
 
 load_dotenv()
 
-options = Options() 
-options.add_argument('--headless')  
-options.add_argument('--disable-gpu')
-
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, links, driver=webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)):
+    def __init__(self, links, driver):
         super().__init__(driver=driver)
         assert links, 'There is no any link. Something went wrong.'
         self.links = links
@@ -41,7 +34,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             res['link'] = link
             res['post_id'] = int(link.split('/')[-1])
             results.append(res)
-        self.driver.close()
+        logger.info(f'Crawled {len(results)} posts.')
         return results
     
     def crawl(self, url=None):
@@ -66,6 +59,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
              WHERE `created` = (SELECT MAX(`created`) FROM `posts`);
             ''')
             links = [tup[0] for tup in cursor.fetchall()]
+        logger.info(f'Get {len(links)} watching links.')
         return links
 
     def save_to_db(self, data: List[dict]):
@@ -78,6 +72,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             sql = f"INSERT INTO `posts` ({columns}) VALUES (%({placeholders})s)"
             cursor.executemany(sql, data)
         self.conn.commit()
+        logger.info(f'Saved {len(data)} posts.')
         self.conn.close()
 
     def run(self):
