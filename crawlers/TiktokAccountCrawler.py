@@ -72,6 +72,7 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
             sql = 'INSERT INTO `accounts_info` (%s) VALUES (%s)' % (columns, placeholders)
             cursor.execute(sql, list(data.values()))
         conn.commit()
+        conn.close()
 
     def get_latest_posts(self, html, limit=5):
         posts = html.findAll('div', {'data-e2e': 'user-post-item'}, limit=limit)
