@@ -1,10 +1,8 @@
 import abc
+from types import FunctionType
+from typing import List, Tuple
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
-from util import convert_str_to_number
+from bs4 import BeautifulSoup as bs
 
 class BaseTiktokCrawler(metaclass=abc.ABCMeta):
     def __init__(self, driver=None):
@@ -22,3 +20,11 @@ class BaseTiktokCrawler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def run(self):
         return NotImplemented
+
+    def parse_targets(self, html: bs, targets: List[Tuple[str, dict]], res: dict, transform_fn: FunctionType=None) -> dict:
+        for tag, cond in targets:
+            key = list(cond.values())[0].replace('-', '_')
+            res[key] = html.find(tag, cond).text
+            if transform_fn:
+                res[key] = transform_fn(res[key])
+        return res

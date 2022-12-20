@@ -1,6 +1,4 @@
 from datetime import datetime
-from types import FunctionType
-from typing import List, Tuple
 import os
 
 from bs4 import BeautifulSoup as bs
@@ -19,11 +17,10 @@ load_dotenv()
 options = Options() 
 options.add_argument('--headless')  
 options.add_argument('--disable-gpu')
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=options)
 
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account: str, driver=driver):
+    def __init__(self, account: str, driver=webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)):
         super().__init__(driver=driver)
         assert account[0] == '@', 'The account\'s format is invalid.'
         self.account = account
@@ -47,14 +44,6 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         res = self.parse_targets(html, targets, {})
         self.parse_targets(html, counts, res, convert_str_to_number)
         self.links = self.get_latest_posts(html)
-        return res
-
-    def parse_targets(self, html: bs, targets: List[Tuple[str, dict]], res: dict, transform_fn: FunctionType=None) -> dict:
-        for tag, cond in targets:
-            key = list(cond.values())[0].replace('-', '_')
-            res[key] = html.find(tag, cond).text
-            if transform_fn:
-                res[key] = transform_fn(res[key])
         return res
     
     def save_to_db(self, data: dict):
