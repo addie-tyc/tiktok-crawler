@@ -18,7 +18,9 @@ driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chro
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
     def __init__(self, account: str, ):
-        super().__init__(account, driver=driver)
+        super().__init__(driver=driver)
+        assert account[0] == '@', 'The account\'s format is invalid.'
+        self.account = account
         self.url = f'https://www.tiktok.com/{self.account}'
     
     def crawl(self, url=None) -> dict:
