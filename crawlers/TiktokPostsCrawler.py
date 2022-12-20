@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import pymysql.cursors
 
 from crawlers.BaseTiktokCrawler import BaseTiktokCrawler
+from logger import logger
 from util import convert_str_to_number
 
 load_dotenv()
@@ -33,6 +34,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             res['link'] = link
             res['post_id'] = int(link.split('/')[-1])
             results.append(res)
+        logger.info(f'Crawled {len(results)} posts.')
         return results
     
     def crawl(self, url=None):
@@ -57,6 +59,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
              WHERE `created` = (SELECT MAX(`created`) FROM `posts`);
             ''')
             links = [tup[0] for tup in cursor.fetchall()]
+        logger.info(f'Get {len(links)} watching links.')
         return links
 
     def save_to_db(self, data: List[dict]):
@@ -69,6 +72,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             sql = f"INSERT INTO `posts` ({columns}) VALUES (%({placeholders})s)"
             cursor.executemany(sql, data)
         self.conn.commit()
+        logger.info(f'Saved {len(data)} posts.')
         self.conn.close()
 
     def run(self):
