@@ -4,15 +4,21 @@ from typing import List, Tuple
 from bs4 import BeautifulSoup as bs
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 from crawlers.BaseTiktokCrawler import BaseTiktokCrawler
 from util import convert_str_to_number
 
+options = Options() 
+options.add_argument('--headless')  
+options.add_argument('--disable-gpu')
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), chrome_options=options)
+
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
     def __init__(self, account: str, ):
-        super().__init__(account, driver=webdriver.Chrome(service=Service(ChromeDriverManager().install())))
+        super().__init__(account, driver=driver)
         self.url = f'https://www.tiktok.com/{self.account}'
     
     def crawl(self, url=None) -> dict:
