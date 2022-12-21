@@ -37,6 +37,10 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         self.parse_targets(html, counts, res, convert_str_to_number)
         self.links = self.get_latest_posts(html)
         logger.info(f'Get {len(self.links)} latest posts.')
+        utcnow = datetime.utcnow()
+        res['created'] = utcnow
+        with open(f'data/{utcnow}.html', 'w+') as file:
+            file.write(str(html))
         return res
     
     def save_to_db(self, data: dict):
@@ -47,7 +51,6 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
             password=os.getenv('SQL_PWD'),
             db=os.getenv('SQL_DB')
             )
-        data['created'] = datetime.utcnow()
         placeholders = ', '.join(['%s'] * len(data))
         columns = ', '.join(data.keys())
         with conn.cursor() as cursor:
