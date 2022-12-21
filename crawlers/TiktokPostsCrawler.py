@@ -14,11 +14,12 @@ load_dotenv()
 
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account, driver, links):
+    def __init__(self, account: str, driver, links):
         super().__init__(account, driver)
         if not links:
             logger.warn('There is no any link in the account page.')
         self.links = links
+        self.user_title = account.replace('@', '')
         self.conn = pymysql.connect(
             host=os.getenv('SQL_HOST'),
             port=int(os.getenv('SQL_PORT')),
@@ -33,6 +34,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
         for link in self.links:
             res = self.crawl(link)
             res['link'] = link
+            res['user_title'] = self.user_title
             res['post_id'] = int(link.split('/')[-1])
             results.append(res)
         logger.info(f'Crawled {len(results)} posts.')
