@@ -5,7 +5,9 @@ from typing import List, Tuple
 from bs4 import BeautifulSoup as bs
 
 class BaseTiktokCrawler(metaclass=abc.ABCMeta):
-    def __init__(self, driver=None):
+    def __init__(self, account, driver=None):
+        assert account[0] == '@', 'The account\'s format is invalid.'
+        self.account = account
         assert driver, 'The driver has not be assigned.'  
         self.driver = driver
     

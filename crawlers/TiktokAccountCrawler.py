@@ -13,10 +13,8 @@ load_dotenv()
 
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account: str, driver):
-        super().__init__(driver=driver)
-        assert account[0] == '@', 'The account\'s format is invalid.'
-        self.account = account
+    def __init__(self, account, driver):
+        super().__init__(account, driver)
         self.url = f'https://www.tiktok.com/{self.account}'
         self.links = []
     
@@ -39,7 +37,9 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         logger.info(f'Get {len(self.links)} latest posts.')
         utcnow = datetime.utcnow()
         res['created'] = utcnow
-        with open(f'data/{utcnow}.html', 'w+') as file:
+        filename = f'data/{self.account}/{utcnow}.html'
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w+') as file:
             file.write(str(html))
         return res
     

@@ -14,10 +14,12 @@ load_dotenv()
 
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, links, driver):
-        super().__init__(driver=driver)
-        assert links, 'There is no any link. Something went wrong.'
+    def __init__(self, account: str, driver, links):
+        super().__init__(account, driver)
+        if not links:
+            logger.warn('There is no any link in the account page.')
         self.links = links
+        self.user_title = account.replace('@', '')
         self.conn = pymysql.connect(
             host=os.getenv('SQL_HOST'),
             port=int(os.getenv('SQL_PORT')),
@@ -32,6 +34,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
         for link in self.links:
             res = self.crawl(link)
             res['link'] = link
+            res['user_title'] = self.user_title
             res['post_id'] = int(link.split('/')[-1])
             results.append(res)
         logger.info(f'Crawled {len(results)} posts.')
@@ -55,9 +58,10 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
     def get_watching_links(self):
         with self.conn.cursor() as cursor:
             cursor.execute('''
-            SELECT `link` FROM `posts` 
-             WHERE `created` = (SELECT MAX(`created`) FROM `posts`);
-            ''')
+            SELECT `link` FROM `posts`
+             WHERE `user_title` = %s
+               AND`created` = (SELECT MAX(`created`) FROM `posts`);
+            ''', self.user_title)
             links = [tup[0] for tup in cursor.fetchall()]
         logger.info(f'Get {len(links)} watching links.')
         return links
