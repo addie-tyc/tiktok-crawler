@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from flask import Flask, request
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -17,11 +18,17 @@ options.add_argument('--disable-extensions')
 options.add_argument('--disable-dev-shm-usage')
 options.add_argument('--no-sandbox')
 options.add_argument('--headless')
-options.binary_location = os.getenv('BINARY_LOC') # need to install chromium first
 
-if __name__ == '__main__':
+app = Flask(__name__)
+
+@app.route('/', methods=['POST'])
+def main():
     driver = webdriver.Chrome(options=options)
     for account in ['@archieandaxing', '@zachking']:
         posts = TiktokAccountCrawler(account, driver).run()
         TiktokPostsCrawler(account, driver, posts).run()
     driver.close()
+    return 'ok', 200
+
+if __name__ == "__main__":
+  app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
