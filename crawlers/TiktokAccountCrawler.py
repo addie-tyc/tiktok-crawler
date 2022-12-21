@@ -13,10 +13,8 @@ load_dotenv()
 
 class TiktokAccountCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account: str, driver):
-        super().__init__(driver=driver)
-        assert account[0] == '@', 'The account\'s format is invalid.'
-        self.account = account
+    def __init__(self, account, driver):
+        super().__init__(account, driver)
         self.url = f'https://www.tiktok.com/{self.account}'
         self.links = []
     

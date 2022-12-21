@@ -14,9 +14,10 @@ load_dotenv()
 
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, links, driver):
-        super().__init__(driver=driver)
-        assert links, 'There is no any link. Something went wrong.'
+    def __init__(self, account, driver, links):
+        super().__init__(account, driver)
+        if not links:
+            logger.warn('There is no any link in the account page.')
         self.links = links
         self.conn = pymysql.connect(
             host=os.getenv('SQL_HOST'),
