@@ -16,7 +16,7 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
     def __init__(self, account, driver):
         super().__init__(account, driver)
         self.url = f'https://www.tiktok.com/{self.account}'
-        self.links = []
+        self.posts = []
     
     def crawl(self, url=None) -> dict:
         self.driver.get(self.url)
@@ -33,8 +33,8 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         ]
         res = self.parse_targets(html, targets, {})
         self.parse_targets(html, counts, res, convert_str_to_number)
-        self.links = self.get_latest_posts(html)
-        logger.info(f'Get {len(self.links)} latest posts.')
+        self.posts = self.get_latest_posts(html)
+        logger.info(f'Get {len(self.posts)} latest posts.')
         utcnow = datetime.utcnow()
         res['created'] = utcnow
         filename = f'data/{self.account}/{utcnow}.html'
@@ -62,7 +62,10 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
 
     def get_latest_posts(self, html, limit=5):
         posts = html.findAll('div', {'data-e2e': 'user-post-item'}, limit=limit)
-        return [post.find('a')['href'] for post in posts]
+        return [{
+            'link': post.find('a')['href'], 
+            **self.parse_targets(post, [('strong', {'data-e2e': 'video-views'})], {}, convert_str_to_number)
+            } for post in posts]
 
     def run(self):
         res = self.crawl()
