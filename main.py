@@ -21,6 +21,7 @@ options.binary_location = os.getenv('BINARY_LOC') # need to install chromium fir
 
 if __name__ == '__main__':
     driver = webdriver.Chrome(options=options)
-    links = TiktokAccountCrawler('@archieandaxing', driver).run()
-    TiktokPostsCrawler(links, driver).run()
+    for account in ['@archieandaxing', '@zachking']:
+        links = TiktokAccountCrawler(account, driver).run()
+        TiktokPostsCrawler(account, driver, links).run()
     driver.close()
