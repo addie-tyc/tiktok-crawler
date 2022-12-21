@@ -70,4 +70,4 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
     def run(self):
         res = self.crawl()
         self.save_to_db(res)
-        return self.links
+        return self.posts
