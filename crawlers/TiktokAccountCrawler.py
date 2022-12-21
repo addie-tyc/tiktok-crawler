@@ -37,7 +37,9 @@ class TiktokAccountCrawler(BaseTiktokCrawler):
         logger.info(f'Get {len(self.links)} latest posts.')
         utcnow = datetime.utcnow()
         res['created'] = utcnow
-        with open(f'data/{utcnow}.html', 'w+') as file:
+        filename = f'data/{self.account}/{utcnow}.html'
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w+') as file:
             file.write(str(html))
         return res
     
