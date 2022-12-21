@@ -14,11 +14,11 @@ load_dotenv()
 
 class TiktokPostsCrawler(BaseTiktokCrawler):
 
-    def __init__(self, account: str, driver, links):
+    def __init__(self, account: str, driver, posts):
         super().__init__(account, driver)
-        if not links:
-            logger.warn('There is no any link in the account page.')
-        self.links = links
+        if not posts:
+            logger.warn('There is no any post in the account page.')
+        self.posts = posts
         self.user_title = account.replace('@', '')
         self.conn = pymysql.connect(
             host=os.getenv('SQL_HOST'),
@@ -30,13 +30,18 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
     
     def batch_crawl(self, watching_links) -> List[dict]:
         results = []
-        self.links = list(set(self.links).union(set(watching_links)))
-        for link in self.links:
+        crawled = set()
+        for post in self.posts:
+            link = post['link']
+            post.update(self.crawl(link))
+            results.append(post)
+            crawled.add(link)
+        uncrawled = set(watching_links) - crawled
+        for link in uncrawled:
             res = self.crawl(link)
-            res['link'] = link
-            res['user_title'] = self.user_title
-            res['post_id'] = int(link.split('/')[-1])
+            res['video_views'] = None
             results.append(res)
+            crawled.add(link)
         logger.info(f'Crawled {len(results)} posts.')
         return results
     
@@ -49,10 +54,13 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
         counts = [
             ('strong', {'data-e2e': 'like-count'}),
             ('strong', {'data-e2e': 'comment-count'}),
+            ('strong', {'data-e2e': 'share-count'}),
             ]
         res = self.parse_targets(html, targets, {})
         self.parse_targets(html, counts, res, convert_str_to_number)
         res['description'] = res.pop('browse_video_desc')
+        res['user_title'] = self.user_title
+        res['post_id'] = int(url.split('/')[-1])
         return res
     
     def get_watching_links(self):
