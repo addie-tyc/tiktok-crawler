@@ -60,8 +60,8 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
             cursor.execute('''
             SELECT `link` FROM `posts`
              WHERE `user_title` = %s
-               AND`created` = (SELECT MAX(`created`) FROM `posts`);
-            ''', self.user_title)
+               AND`created` = (SELECT MAX(`created`) FROM `posts` WHERE `user_title` = %s);
+            ''', [self.user_title, self.user_title])
             links = [tup[0] for tup in cursor.fetchall()]
         logger.info(f'Get {len(links)} watching links.')
         return links
