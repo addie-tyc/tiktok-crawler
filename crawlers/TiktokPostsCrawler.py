@@ -54,6 +54,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
         counts = [
             ('strong', {'data-e2e': 'like-count'}),
             ('strong', {'data-e2e': 'comment-count'}),
+            ('strong', {'data-e2e': 'share-count'}),
             ]
         res = self.parse_targets(html, targets, {})
         self.parse_targets(html, counts, res, convert_str_to_number)
