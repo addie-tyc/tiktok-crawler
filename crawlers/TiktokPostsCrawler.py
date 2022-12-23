@@ -40,6 +40,7 @@ class TiktokPostsCrawler(BaseTiktokCrawler):
         for link in uncrawled:
             res = self.crawl(link)
             res['video_views'] = None
+            res['link'] = link
             results.append(res)
             crawled.add(link)
         logger.info(f'Crawled {len(results)} posts.')
